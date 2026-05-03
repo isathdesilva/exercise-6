@@ -1,0 +1,6 @@
+.axis text { font-size: 11px; }
+.axis path, .axis line { stroke: #ccc; }
+
+.hist-bar { fill: #b08460; }
+
+circle { opacity: 0.5; }

@@ -2,332 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exercise 6 – Interactivity</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; }
-    nav { background: #1a1a2e; padding: 12px 24px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-    nav a { color: #e0e0e0; text-decoration: none; font-size: 14px; padding: 6px 12px; border-radius: 4px; }
-    nav a:hover, nav a.active { background: #4a90d9; color: white; }
-    nav .title { color: white; font-weight: bold; margin-right: 16px; }
-    main { max-width: 1100px; margin: 40px auto; padding: 0 24px; }
-    h1 { font-size: 28px; margin-bottom: 8px; color: #1a1a2e; }
-    p.desc { color: #666; margin-bottom: 32px; line-height: 1.6; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .chart-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-    .chart-title { font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
-    .chart-subtitle { font-size: 12px; color: #888; margin-bottom: 14px; }
-    .filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-    .filter-row label { font-size: 13px; font-weight: 500; color: #555; }
-    .filter-btn { padding: 5px 14px; border: 1.5px solid #4a90d9; background: white; color: #4a90d9;
-                  border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-    .filter-btn.active { background: #4a90d9; color: white; }
-    .filter-btn:hover { background: #4a90d9; color: white; }
-    .axis text { font-size: 11px; fill: #555; }
-    .axis path, .axis line { stroke: #ccc; }
-    .axis-label { font-size: 12px; fill: #555; }
-    .bar-hist { fill: #4a90d9; opacity: 0.8; cursor: pointer; transition: opacity 0.2s; }
-    .bar-hist:hover { opacity: 1; }
-    .dot { cursor: pointer; }
-    /* Tooltip */
-    .tooltip {
-      position: absolute; background: #1a1a2e; color: white;
-      padding: 10px 14px; border-radius: 8px; font-size: 12px;
-      pointer-events: none; opacity: 0; transition: opacity 0.15s;
-      max-width: 200px; line-height: 1.6; box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-    }
-    .tooltip strong { color: #7ec8e3; }
-    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
-    .legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
-    .count-badge { display: inline-block; background: #f0f4f8; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #555; margin-left: 8px; }
-    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
-  </style>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/visualisation.css">
 </head>
 <body>
-  <div class="tooltip" id="tooltip"></div>
+
+  <h1>Exercise 6 – Interactivity</h1>
   <nav>
-    <span class="title">COS30045</span>
-    <a href="../index.html">Home</a>
-    <a href="../ex4/index.html">Ex 4.1 SVG House</a>
-    <a href="../ex4/bar.html">Ex 4.3–4.6 Bar Chart</a>
-    <a href="../ex5/index.html">Ex 5 Multi-chart</a>
-    <a href="index.html" class="active">Ex 6 Interactivity</a>
+    <a href="../exercise-4-1/index.html">Ex 4.1</a>
+    <a href="../exercise-4-3-to-4-6/index.html">Ex 4.3–4.6</a>
+    <a href="../exercise-5/index.html">Ex 5</a>
+    <a href="index.html">Ex 6</a>
   </nav>
-  <main>
-    <h1>Exercise 6 – Interactivity</h1>
-    <p class="desc">
-      Demonstrates D3 <strong>interactions</strong>: a histogram with a <strong>screen-size filter</strong>
-      (animation/transitions on filter change) and a scatter plot with rich <strong>tooltips</strong>
-      showing brand, model, screen tech, and star rating.
-    </p>
-    <div class="grid">
-      <!-- 6.1 + 6.2 HISTOGRAM WITH FILTER -->
-      <div class="chart-card">
-        <div class="chart-title">6.1 &amp; 6.2 – Energy Consumption Histogram</div>
-        <div class="chart-subtitle">Filtered by screen size · Animated transitions on filter change</div>
-        <div class="filter-row">
-          <label>Screen size:</label>
-          <button class="filter-btn active" data-size="all">All</button>
-          <button class="filter-btn" data-size="small">≤43"</button>
-          <button class="filter-btn" data-size="medium">44–55"</button>
-          <button class="filter-btn" data-size="large">56–75"</button>
-          <span class="count-badge" id="hist-count"></span>
-        </div>
-        <div id="histogram"></div>
-      </div>
 
-      <!-- 6.3 + 6.4 SCATTER WITH TOOLTIP -->
-      <div class="chart-card">
-        <div class="chart-title">6.3 &amp; 6.4 – Screen Size vs Energy with Tooltips</div>
-        <div class="chart-subtitle">Hover a dot to see TV details · Coloured by screen technology</div>
-        <div class="filter-row">
-          <label>Tech filter:</label>
-          <button class="filter-btn active scatter-btn" data-tech="all">All</button>
-          <button class="filter-btn scatter-btn" data-tech="LED">LED</button>
-          <button class="filter-btn scatter-btn" data-tech="QLED">QLED</button>
-          <button class="filter-btn scatter-btn" data-tech="OLED">OLED</button>
-        </div>
-        <div id="scatter"></div>
-        <div class="legend" id="scatter-legend"></div>
-      </div>
-    </div>
-  </main>
+  <h2>6.1 &amp; 6.2 – Histogram with Filters</h2>
+  <p>Energy consumption of TVs. Filter by screen technology. Bars update with transitions.</p>
+  <div id="filters_screen"></div>
+  <div id="histogram" class="responsive-svg-container"></div>
 
+  <h2>6.3 &amp; 6.4 – Scatterplot with Tooltips</h2>
+  <p>Star rating vs energy consumption. Hover a dot to see screen size. Colour by screen tech.</p>
+  <div id="scatterplot" class="responsive-svg-container"></div>
+
+  <!-- Script loading order matters -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-  <script>
-    // ── DATA ──────────────────────────────────────────────────────────────────
-    const csvText = `brand,model,screenSize,screenTech,star,energyConsumption
-samsung,QA55QN90DAWXXY,55,QLED,3,258
-samsung,QA65QN90DAWXXY,65,QLED,2.5,380
-samsung,UA65AU8000WXXY,65,LED,3.5,421
-samsung,QA55Q80DAWXXY,55,QLED,3.5,212
-samsung,UA55AU7000WXXY,55,LED,4,198
-samsung,QA75Q70DAWXXY,75,QLED,2.5,490
-samsung,UA43AU7000WXXY,43,LED,4,125
-samsung,UA32AU7000WXXY,32,LED,4.5,80
-lg,OLED55C4PSA,55,OLED,3.5,141
-lg,OLED65C4PSA,65,OLED,3,195
-lg,OLED77C4PSA,77,OLED,2.5,290
-lg,50UR78006LK,50,LED,4,155
-lg,65UR78006LK,65,LED,3.5,260
-lg,55QNED85T6A,55,QLED,3.5,195
-lg,43UR78006LK,43,LED,4.5,120
-lg,32LQ63006LA,32,LED,5,75
-sony,XR55X90L,55,LED,3,202
-sony,KD55X85L,55,LED,3.5,215
-sony,XR65A80L,65,OLED,3,225
-sony,KD65X85L,65,LED,3,280
-sony,XR75X95L,75,LED,2.5,430
-sony,KD43X85L,43,LED,3.5,128
-philips,58BFL2114/12,58,LED,5.5,322
-philips,55HFL6114U/12,55,LED,5,319
-philips,65OLED808/79,65,OLED,3,210
-philips,75PUS8818/12,75,LED,2.5,395
-philips,43PFS6855/12,43,LED,4,118
-hisense,75U80G,75,LED,2.5,1060
-hisense,55U8K,55,QLED,4,218
-hisense,65A7H,65,LED,3.5,288
-hisense,43A6H,43,LED,4,130
-hisense,32A4H,32,LED,4.5,78
-tcl,75C935,75,QLED,2,680
-tcl,65C635,65,LED,3,269
-tcl,55C635,55,LED,3.5,210
-tcl,43C635,43,LED,3.5,138
-tcl,32S5209K,32,LED,4,72
-jvc,AV-H323115A,32,LED,5,130
-jvc,AV-H553115A,55,LED,4,165
-jvc,AV-H653115A,65,LED,3.5,278
-jvc,AV-H433115A,43,LED,4.5,120`;
+  <script src="js/shared-constants.js"></script>
+  <script src="js/interactions.js"></script>
+  <script src="js/histogram.js"></script>
+  <script src="js/scatterplot.js"></script>
+  <script src="js/load-data.js"></script>
 
-    const data = d3.csvParse(csvText, d => ({
-      brand:             d.brand,
-      model:             d.model,
-      screenSize:        +d.screenSize,
-      screenTech:        d.screenTech,
-      star:              +d.star,
-      energyConsumption: +d.energyConsumption
-    }));
-
-    const techColour = d3.scaleOrdinal()
-      .domain(["LED","QLED","OLED"])
-      .range(["#4a90d9","#e67e22","#9b59b6"]);
-
-    const tooltip = document.getElementById("tooltip");
-
-    function showTooltip(event, d) {
-      const stars = "★".repeat(Math.floor(d.star)) + (d.star % 1 ? "½" : "");
-      tooltip.innerHTML = `
-        <strong>${d.brand.toUpperCase()} ${d.model}</strong><br>
-        Screen: ${d.screenSize}" · ${d.screenTech}<br>
-        Energy: ${d.energyConsumption} kWh/yr<br>
-        Rating: ${stars} (${d.star})
-      `;
-      tooltip.style.opacity = "1";
-      tooltip.style.left = (event.pageX + 14) + "px";
-      tooltip.style.top  = (event.pageY - 10) + "px";
-    }
-    function hideTooltip() { tooltip.style.opacity = "0"; }
-
-    // ── 6.1 + 6.2 HISTOGRAM ──────────────────────────────────────────────────
-    (function() {
-      const container = document.getElementById("histogram");
-      const totalW = container.clientWidth || 440;
-      const margin = { top: 20, right: 20, bottom: 60, left: 50 };
-      const w = totalW - margin.left - margin.right;
-      const h = 280 - margin.top - margin.bottom;
-
-      const svg = d3.select("#histogram").append("svg")
-        .attr("viewBox", `0 0 ${totalW} 280`)
-        .attr("width","100%")
-        .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-      const x = d3.scaleLinear().domain([0, 1200]).range([0, w]);
-      const bins = d3.bin().domain(x.domain()).thresholds(x.ticks(18));
-
-      const xAxis = svg.append("g").attr("class","axis").attr("transform",`translate(0,${h})`).call(d3.axisBottom(x).ticks(8));
-      svg.append("text").attr("class","axis-label").attr("x",w/2).attr("y",h+50).attr("text-anchor","middle").text("Energy Consumption (kWh/yr)");
-      svg.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-h/2).attr("y",-38).attr("text-anchor","middle").text("Number of TVs");
-
-      const yAxisG = svg.append("g").attr("class","axis");
-      const barsG  = svg.append("g");
-      const countEl = document.getElementById("hist-count");
-
-      function sizeFilter(size) {
-        if (size === "small")  return data.filter(d => d.screenSize <= 43);
-        if (size === "medium") return data.filter(d => d.screenSize > 43 && d.screenSize <= 55);
-        if (size === "large")  return data.filter(d => d.screenSize > 55);
-        return data;
-      }
-
-      function updateHistogram(size) {
-        const filtered = sizeFilter(size);
-        countEl.textContent = filtered.length + " TVs";
-        const binned = bins(filtered.map(d => d.energyConsumption));
-
-        const y = d3.scaleLinear().domain([0, d3.max(binned, d => d.length)]).nice().range([h, 0]);
-        yAxisG.transition().duration(400).call(d3.axisLeft(y).ticks(5));
-
-        const bars = barsG.selectAll(".bar-hist").data(binned);
-
-        bars.join(
-          enter => enter.append("rect")
-            .attr("class","bar-hist")
-            .attr("x", d => x(d.x0) + 1)
-            .attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 2))
-            .attr("y", h).attr("height", 0)
-            .call(enter => enter.transition().duration(500)
-              .attr("y", d => y(d.length))
-              .attr("height", d => h - y(d.length))),
-          update => update.call(update => update.transition().duration(500)
-              .attr("x", d => x(d.x0) + 1)
-              .attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 2))
-              .attr("y", d => y(d.length))
-              .attr("height", d => h - y(d.length))),
-          exit => exit.call(exit => exit.transition().duration(300).attr("height", 0).attr("y", h).remove())
-        );
-
-        // Tooltip on bars
-        barsG.selectAll(".bar-hist")
-          .on("mouseover", function(event, d) {
-            tooltip.innerHTML = `<strong>${d.x0}–${d.x1} kWh/yr</strong><br>${d.length} TVs`;
-            tooltip.style.opacity = "1";
-            tooltip.style.left = (event.pageX + 14) + "px";
-            tooltip.style.top  = (event.pageY - 10) + "px";
-          })
-          .on("mousemove", function(event) {
-            tooltip.style.left = (event.pageX + 14) + "px";
-            tooltip.style.top  = (event.pageY - 10) + "px";
-          })
-          .on("mouseout", hideTooltip);
-      }
-
-      updateHistogram("all");
-
-      // Filter buttons
-      document.querySelectorAll("[data-size]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll("[data-size]").forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-          updateHistogram(btn.dataset.size);
-        });
-      });
-    })();
-
-    // ── 6.3 + 6.4 SCATTER WITH TOOLTIP ───────────────────────────────────────
-    (function() {
-      const container = document.getElementById("scatter");
-      const totalW = container.clientWidth || 440;
-      const margin = { top: 20, right: 20, bottom: 60, left: 60 };
-      const w = totalW - margin.left - margin.right;
-      const h = 280 - margin.top - margin.bottom;
-
-      const svg = d3.select("#scatter").append("svg")
-        .attr("viewBox", `0 0 ${totalW} 280`)
-        .attr("width","100%")
-        .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
-
-      const x = d3.scaleLinear().domain([28, 82]).range([0, w]);
-      const y = d3.scaleLinear().domain([0, 1150]).nice().range([h, 0]);
-
-      svg.append("g").attr("class","axis").attr("transform",`translate(0,${h})`).call(d3.axisBottom(x).ticks(6));
-      svg.append("g").attr("class","axis").call(d3.axisLeft(y).ticks(5));
-      svg.append("text").attr("class","axis-label").attr("x",w/2).attr("y",h+50).attr("text-anchor","middle").text("Screen Size (inches)");
-      svg.append("text").attr("class","axis-label").attr("transform","rotate(-90)").attr("x",-h/2).attr("y",-48).attr("text-anchor","middle").text("Energy (kWh/yr)");
-
-      const dotsG = svg.append("g");
-      const countBadge = document.createElement("span");
-      countBadge.className = "count-badge";
-
-      function updateScatter(tech) {
-        const filtered = tech === "all" ? data : data.filter(d => d.screenTech === tech);
-
-        dotsG.selectAll(".dot").data(filtered, d => d.model)
-          .join(
-            enter => enter.append("circle").attr("class","dot")
-              .attr("cx", d => x(d.screenSize))
-              .attr("cy", h)
-              .attr("r", 6)
-              .attr("fill", d => techColour(d.screenTech))
-              .attr("opacity", 0)
-              .call(enter => enter.transition().duration(400)
-                .attr("cy", d => y(d.energyConsumption))
-                .attr("opacity", 0.82)),
-            update => update.call(update => update.transition().duration(400)
-              .attr("cx", d => x(d.screenSize))
-              .attr("cy", d => y(d.energyConsumption))
-              .attr("fill", d => techColour(d.screenTech))
-              .attr("opacity", 0.82)),
-            exit => exit.call(exit => exit.transition().duration(300).attr("opacity", 0).remove())
-          );
-
-        // Rebind tooltip events
-        dotsG.selectAll(".dot")
-          .on("mouseover", showTooltip)
-          .on("mousemove", (event) => {
-            tooltip.style.left = (event.pageX + 14) + "px";
-            tooltip.style.top  = (event.pageY - 10) + "px";
-          })
-          .on("mouseout", hideTooltip);
-      }
-
-      updateScatter("all");
-
-      document.querySelectorAll(".scatter-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll(".scatter-btn").forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-          updateScatter(btn.dataset.tech);
-        });
-      });
-
-      // Legend
-      const legend = document.getElementById("scatter-legend");
-      ["LED","QLED","OLED"].forEach(tech => {
-        legend.innerHTML += `<div class="legend-item"><div class="legend-swatch" style="background:${techColour(tech)}"></div>${tech}</div>`;
-      });
-    })();
-  </script>
 </body>
 </html>
